@@ -12,7 +12,7 @@ namespace msblutil
     {
         private static string log;
         private static string arg1;
-        private static Regex lineRegex = new Regex(@"(?<date>\d+:\d+:\d+\.\d+)\s+(?<proc>\d+(:\d+)?)\>(?<line>.*)");
+        private static Regex lineRegex = new Regex(@"(?<date>\d+:\d+:\d+\.\d+)?\s+(?<proc>\d+(:\d+)?)\>(?<line>.*)");
 
         static void Main(string[] args)
         {
@@ -105,7 +105,7 @@ namespace msblutil
 
         private static Dictionary<string, string> GetProcs(string log)
         {
-            Regex projRegex = new Regex("Done Building Project (?<project>\"[^\"]+proj\")");
+            Regex projRegex = new Regex(".*Done Building Project \"(?<project>[^\"]+proj)\".*", RegexOptions.IgnoreCase);
 
             Dictionary<string, string> procProjects = new Dictionary<string, string>();
             using (StreamReader reader = File.OpenText(log))
@@ -124,7 +124,10 @@ namespace msblutil
                         if (m2.Success)
                         {
                             proj = m2.Groups["project"].Value;
-                            procProjects.Add(proc, proj);
+                            if (!procProjects.ContainsKey(proc))
+                            {
+                                procProjects.Add(proc, proj);
+                            }
                         }
                     }
                 }
